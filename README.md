@@ -276,7 +276,7 @@ Redis overhead is the localhost round-trip cost (~1–2 ms per vault operation).
 
 ## Detection accuracy
 
-Tested across 10,000 random samples per entity type, each embedded in a realistic sentence context. Name and address detection uses [armos-ner-en](https://github.com/armos-ai/armos-ner-en) — a custom-trained NER model built specifically for Indian and Western PII, not a generic off-the-shelf model.
+Tested across 10,000 random samples per entity type, each embedded in a realistic sentence context. Name and address detection uses [armos-ner-en](https://huggingface.co/armos-ai/en_armos_ner) — a custom-trained NER model built specifically for Indian and Western PII, not a generic off-the-shelf model.
 
 ![Armos accuracy benchmark](https://raw.githubusercontent.com/armos-ai/armos-python/master/assets/accuracy.png)
 
