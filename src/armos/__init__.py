@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 """
 Armos — Automatic PII masking for OpenAI and Anthropic SDKs.
 
@@ -18,8 +18,9 @@ from .guard import Armos
 from .wrappers.openai import ArmosOpenAI, ArmosAsyncOpenAI
 from .wrappers.anthropic import ArmosAnthropic, ArmosAsyncAnthropic
 from .models import MaskResult, DetectedEntity
+from .masking.vault import ArmosVault
 
-__version__ = "1.4.0"
+__version__ = "2.0.0"
 __all__ = [
     "Armos",
     "ArmosOpenAI",
@@ -28,4 +29,5 @@ __all__ = [
     "ArmosAsyncAnthropic",
     "MaskResult",
     "DetectedEntity",
+    "ArmosVault",
 ]

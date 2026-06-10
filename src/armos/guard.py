@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 import asyncio
 from typing import Literal
 from .models import MaskResult
@@ -21,11 +21,15 @@ class Armos:
 
     def __init__(
         self,
-        store: Literal["redis"] | None = None,
-        redis_url: str | None = None,
-        vault_ttl: int = _DEFAULT_VAULT_TTL,
+        store: Literal["armos"] | None = None,
+        armos_api_key: str | None = None,
+        armos_base_url: str = "https://proxy.armos.dev",
     ):
-        self._vault: BaseVault = build_vault(store=store, redis_url=redis_url, ttl=vault_ttl)
+        self._vault: BaseVault = build_vault(
+            store=store,
+            api_key=armos_api_key,
+            base_url=armos_base_url,
+        )
         self._engine = DetectionEngine()
         self._tokenizer = Tokenizer(self._vault)
 

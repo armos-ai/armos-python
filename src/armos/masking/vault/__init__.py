@@ -1,47 +1,37 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 from .base import BaseVault
 from .memory import MemoryVault
+from .armos_vault import ArmosVault
 
-try:
-    from .redis import RedisVault
-    _redis_available = True
-except ImportError:  # pragma: no cover
-    RedisVault = None  # pragma: no cover
-    _redis_available = False  # pragma: no cover
-
-__all__ = ["BaseVault", "MemoryVault", "RedisVault"]
-
-_DEFAULT_REDIS_TTL = 86400
+__all__ = ["BaseVault", "MemoryVault", "ArmosVault"]
 
 
 def build_vault(
     store: str | None = None,
-    redis_url: str | None = None,
-    ttl: int = _DEFAULT_REDIS_TTL,
+    api_key: str | None = None,
+    base_url: str = "https://proxy.armos.dev",
+    **_kwargs,
 ) -> BaseVault:
     """
-    Factory function. Builds the appropriate vault from the store argument.
+    Factory function. Builds the appropriate vault from the *store* argument.
 
     Args:
-        store:     None for in-memory, or "redis" for Redis-backed vault
-        redis_url: Redis connection URL e.g. "redis://localhost:6379" (required when store="redis")
-        ttl:       Redis TTL in seconds (ignored for memory vault)
+        store:    ``None`` for in-memory (default), or ``"armos"`` for the
+                  client-side encrypted Armos cloud vault.
+        api_key:  Armos API key (required when ``store="armos"``).
+        base_url: Armos proxy base URL (optional, used when ``store="armos"``).
     """
     if store is None:
         return MemoryVault()
 
-    if store == "redis":
-        if not _redis_available:
-            raise ImportError(
-                "Redis support requires the redis package. Install with: pip install armos[redis]"
-            )
-        if not redis_url:
+    if store == "armos":
+        if not api_key:
             raise ValueError(
-                "redis_url is required when store='redis'. "
-                "Example: Armos(store='redis', redis_url='redis://localhost:6379')"
+                "api_key is required when store='armos'. "
+                "Example: Armos(store='armos', armos_api_key='your-key')"
             )
-        return RedisVault(url=redis_url, ttl=ttl)
+        return ArmosVault(api_key=api_key, base_url=base_url)
 
     raise ValueError(
-        f"Unsupported store: '{store}'. Valid options: None (in-memory) or 'redis'."
+        f"Unsupported store: '{store}'. Valid options: None (in-memory) or 'armos'."
     )
