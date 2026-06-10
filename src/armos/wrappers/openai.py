@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import Any, Literal
-from ..guard import Armos, _DEFAULT_VAULT_TTL
+from ..guard import Armos
 from .base import (
     _MaskingMixin, _AsyncMaskingMixin,
     _StreamingDemasker, _ArmosOpenAIAsyncStream,
@@ -179,12 +179,12 @@ class ArmosOpenAI:
     def __init__(
         self,
         client: Any,
-        store: Literal["redis"] | None = None,
-        redis_url: str | None = None,
-        vault_ttl: int = _DEFAULT_VAULT_TTL,
+        store: Literal["armos"] | None = None,
+        armos_api_key: str | None = None,
+        armos_base_url: str = "https://proxy.armos.dev",
     ):
         self._client = client
-        self._guard = Armos(store=store, redis_url=redis_url, vault_ttl=vault_ttl)
+        self._guard = Armos(store=store, armos_api_key=armos_api_key, armos_base_url=armos_base_url)
         self.chat = ArmosChat(client.chat, self._guard)
         self.responses = ArmosResponses(client.responses, self._guard)
         self.embeddings = ArmosEmbeddings(client.embeddings, self._guard)
@@ -315,12 +315,12 @@ class ArmosAsyncOpenAI:
     def __init__(
         self,
         client: Any,
-        store: Literal["redis"] | None = None,
-        redis_url: str | None = None,
-        vault_ttl: int = _DEFAULT_VAULT_TTL,
+        store: Literal["armos"] | None = None,
+        armos_api_key: str | None = None,
+        armos_base_url: str = "https://proxy.armos.dev",
     ):
         self._client = client
-        self._guard = Armos(store=store, redis_url=redis_url, vault_ttl=vault_ttl)
+        self._guard = Armos(store=store, armos_api_key=armos_api_key, armos_base_url=armos_base_url)
         self.chat = ArmosAsyncChat(client.chat, self._guard)
         self.responses = ArmosAsyncResponses(client.responses, self._guard)
         self.embeddings = ArmosAsyncEmbeddings(client.embeddings, self._guard)

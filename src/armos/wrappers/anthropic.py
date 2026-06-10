@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from types import SimpleNamespace
 from typing import Any, Literal
-from ..guard import Armos, _DEFAULT_VAULT_TTL
+from ..guard import Armos
 from .base import (
     _MaskingMixin, _AsyncMaskingMixin,
     _StreamingDemasker, _ArmosAnthropicAsyncStream,
@@ -112,12 +112,12 @@ class ArmosAnthropic:
     def __init__(
         self,
         client: Any,
-        store: Literal["redis"] | None = None,
-        redis_url: str | None = None,
-        vault_ttl: int = _DEFAULT_VAULT_TTL,
+        store: Literal["armos"] | None = None,
+        armos_api_key: str | None = None,
+        armos_base_url: str = "https://proxy.armos.dev",
     ):
         self._client = client
-        self._guard = Armos(store=store, redis_url=redis_url, vault_ttl=vault_ttl)
+        self._guard = Armos(store=store, armos_api_key=armos_api_key, armos_base_url=armos_base_url)
         self.messages = ArmosMessages(client.messages, self._guard)
 
     def __getattr__(self, name: str) -> Any:
@@ -175,12 +175,12 @@ class ArmosAsyncAnthropic:
     def __init__(
         self,
         client: Any,
-        store: Literal["redis"] | None = None,
-        redis_url: str | None = None,
-        vault_ttl: int = _DEFAULT_VAULT_TTL,
+        store: Literal["armos"] | None = None,
+        armos_api_key: str | None = None,
+        armos_base_url: str = "https://proxy.armos.dev",
     ):
         self._client = client
-        self._guard = Armos(store=store, redis_url=redis_url, vault_ttl=vault_ttl)
+        self._guard = Armos(store=store, armos_api_key=armos_api_key, armos_base_url=armos_base_url)
         self.messages = ArmosAsyncMessages(client.messages, self._guard)
 
     def __getattr__(self, name: str) -> Any:

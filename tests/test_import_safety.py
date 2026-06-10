@@ -56,21 +56,16 @@ def test_redis_vault_import_does_not_crash_without_redis(monkeypatch):
     # If we got here without exception, the lazy import is working
     assert vault_pkg.build_vault is not None
 
-def test_redis_store_without_redis_package_raises_import_error(monkeypatch):
-    """store='redis' with redis package missing raises ImportError, not crash on import."""
-    import armos.masking.vault as vault_pkg
-    # Force _redis_available to False to simulate missing package
-    monkeypatch.setattr(vault_pkg, "_redis_available", False)
-    monkeypatch.setattr(vault_pkg, "RedisVault", None)
-
-    with pytest.raises(ImportError, match="pip install armos\\[redis\\]"):
-        vault_pkg.build_vault(store="redis", redis_url="redis://localhost:6379")
+def test_redis_store_without_redis_package_raises_import_error():
+    """store='redis' is not supported in v2; raises ValueError with migration hint."""
+    from armos.masking.vault import build_vault
+    with pytest.raises(ValueError, match="Unsupported store"):
+        build_vault(store="redis", redis_url="redis://localhost:6379")
 
 def test_redis_store_without_url_raises_value_error():
-    """store='redis' without redis_url gives a clear error pointing to the fix."""
-    pytest.importorskip("redis")
+    """store='redis' is not supported in v2; raises ValueError regardless of redis_url."""
     from armos.masking.vault import build_vault
-    with pytest.raises(ValueError, match="redis_url is required"):
+    with pytest.raises(ValueError, match="Unsupported store"):
         build_vault(store="redis")
 
 
@@ -118,20 +113,9 @@ def test_armos_anthropic_default_is_memory():
     client = ArmosAnthropic(MagicMock())
     assert isinstance(client._guard._vault, MemoryVault)
 
-def test_armos_openai_redis_store_propagates(monkeypatch):
-    """store='redis' + redis_url propagates all the way into the vault."""
-    pytest.importorskip("redis")
-    from unittest.mock import MagicMock, patch
+def test_armos_openai_invalid_store_raises():
+    """store='redis' (old API) raises ValueError — use store='armos' in v2."""
+    from unittest.mock import MagicMock
     from armos import ArmosOpenAI
-    from armos.masking.vault.redis import RedisVault
-
-    with patch.object(RedisVault, "__init__", return_value=None) as mock_init:
-        mock_init.return_value = None
-        try:
-            client = ArmosOpenAI(
-                MagicMock(),
-                store="redis",
-                redis_url="redis://localhost:6379",
-            )
-        except Exception:
-            pass  # connection errors are fine — we just check the path was taken
+    with pytest.raises(ValueError, match="Unsupported store"):
+        ArmosOpenAI(MagicMock(), store="redis")

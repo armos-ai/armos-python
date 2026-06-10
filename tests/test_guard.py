@@ -85,19 +85,14 @@ def test_clean_text_unchanged(guard):
     assert not result.has_pii
 
 def test_redis_store():
-    pytest.importorskip("redis")
-    try:
-        guard = Armos(store="redis", redis_url="redis://localhost:6379")
-        result = guard.mask("Email: test@example.com")
-        assert "[PII:EMAIL:" in result.text
-        assert guard.demask(result.text) == "Email: test@example.com"
-    except Exception:
-        pytest.skip("Redis not available")
+    """store='redis' is not supported in v2; raises ValueError."""
+    with pytest.raises(ValueError, match="Unsupported store"):
+        Armos(store="redis")
 
 def test_redis_store_missing_url_raises():
-    pytest.importorskip("redis")
-    with pytest.raises(ValueError, match="redis_url is required"):
-        Armos(store="redis")
+    """store='redis' is not supported in v2 regardless of redis_url."""
+    with pytest.raises(ValueError, match="Unsupported store"):
+        Armos(store="redis", armos_api_key=None)
 
 def test_invalid_store_raises():
     with pytest.raises(ValueError, match="Unsupported store"):
