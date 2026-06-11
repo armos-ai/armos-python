@@ -74,7 +74,7 @@ def test_detects_indian_flat_address(engine):
 def test_address_masked_in_guard():
     from armos import Armos
     guard = Armos()
-    result = guard.mask("Ship to 123 Oak Avenue, please process quickly")
+    result = guard.mask("Ship to 123 Oak Avenue, Chicago, IL 60601, please process quickly")
     assert "[PII:ADDRESS:" in result.text
 
 def test_no_false_positives(engine):
