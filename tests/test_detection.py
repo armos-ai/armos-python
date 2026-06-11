@@ -135,6 +135,19 @@ def test_resolve_overlaps_higher_score_wins(engine):
     assert resolved[0].score == 0.85
 
 
+def test_detects_openai_sk_proj_key(engine):
+    entities = engine.detect("key = sk-proj-abc123def456ghi789jkl012mno345pqr678stu")
+    assert any(e.entity_type == "APIKEY" for e in entities)
+
+def test_detects_aws_secret_key(engine):
+    entities = engine.detect("aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
+    assert any(e.entity_type == "APIKEY" for e in entities)
+
+def test_no_false_positive_email_in_db_connection_string(engine):
+    entities = engine.detect("postgresql://admin:password123@db.acme.com:5432/prod")
+    assert not any(e.entity_type == "EMAIL" for e in entities)
+
+
 def test_load_model_path_returns_hf_path_on_success():
     """_load_model_path() returns the HuggingFace snapshot path when download succeeds."""
     from unittest.mock import patch

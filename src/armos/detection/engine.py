@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import re
 import warnings
 from pathlib import Path
 from typing import List
@@ -17,6 +18,8 @@ from .recognisers.aadhaar import AadhaarRecogniser
 from .recognisers.pan import PANRecogniser
 from .recognisers.standard import APIKeyRecogniser
 from .recognisers.address import PhysicalAddressRecogniser
+
+_URL_CREDS_RE = re.compile(r"://[^@\s]*$")
 
 _HF_MODEL_ID = "armos-ai/en_armos_ner"
 _FALLBACK_MODEL = "en_core_web_lg"
@@ -179,7 +182,7 @@ class DetectionEngine:
             for r in results
         ]
 
-        entities = self._filter_entities(entities)
+        entities = self._filter_entities(entities, text)
         entities.sort(key=lambda e: e.start)
         return self._resolve_overlaps(entities)
 
@@ -214,17 +217,25 @@ class DetectionEngine:
             else:
                 uncertain.append(entity)
 
-        certain = self._filter_entities(certain)
+        certain = self._filter_entities(certain, text)
         certain.sort(key=lambda e: e.start)
         uncertain.sort(key=lambda e: e.start)
         return self._resolve_overlaps(certain), uncertain
 
-    def _filter_entities(self, entities: List[DetectedEntity]) -> List[DetectedEntity]:
-        """Drop ADDRESS detections that are a single bare word — never a real address."""
-        return [
-            e for e in entities
-            if not (e.entity_type == "ADDRESS" and " " not in e.text and "," not in e.text)
-        ]
+    def _filter_entities(self, entities: List[DetectedEntity], text: str = "") -> List[DetectedEntity]:
+        """Post-filter to remove known false positive patterns."""
+        filtered = []
+        for e in entities:
+            # Drop single bare-word ADDRESS — never a real address
+            if e.entity_type == "ADDRESS" and " " not in e.text and "," not in e.text:
+                continue
+            # Drop EMAIL matches inside URL/connection-string credentials (://user:pass@host)
+            if e.entity_type == "EMAIL" and text:
+                preceding = text[max(0, e.start - 60):e.start]
+                if _URL_CREDS_RE.search(preceding):
+                    continue
+            filtered.append(e)
+        return filtered
 
     def _resolve_overlaps(self, entities: List[DetectedEntity]) -> List[DetectedEntity]:
         """Remove overlapping detections. Higher confidence wins.
